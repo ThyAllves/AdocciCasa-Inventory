@@ -4,7 +4,7 @@
         "nome": "Cadeira de Jantar",
         "categoria": "Móveis",
         "precoCompra": 199.99,
-        "preço": 299.99,
+        "preco": 299.99,
         "sku": "CAD-JAN-001",
         "estoqueAtual": 20,
         "estoqueMinimo": 5
@@ -14,7 +14,7 @@
         "nome": "Sofá de 3 Lugares",
         "categoria": "Móveis",
         "precoCompra": 899.99,
-        "preço": 1299.99,
+        "preco": 1299.99,
         "sku": "SOF-3L-001",
         "estoqueAtual": 10,
         "estoqueMinimo": 2

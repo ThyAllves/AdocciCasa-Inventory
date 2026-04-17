@@ -61,6 +61,8 @@ const FormularioProduto = ({ aoSalvar }) => {
                     <input
                         type="text"
                         className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-adocci-gold focus:outline-none transition-all"
+                        value={nome}
+                        onChange={(e) => setNome(e.target.value)}
                         placeholder="Ex: Espelho Veneziano moldura ouro"
                         required
                     />
@@ -96,7 +98,7 @@ const FormularioProduto = ({ aoSalvar }) => {
                    
                         {/* Campo: Preço */}
                         <div>
-                            <label className="block text-sm font-semibold text-gray-700 mb-1">Preço Unitário</label>
+                            <label className="block text-sm font-semibold text-gray-700 mb-1">Preço de Venda</label>
                             <input
                                 type="number"
                                 value={preco}
@@ -127,13 +129,19 @@ const FormularioProduto = ({ aoSalvar }) => {
                     {/* Estoque Atual */}
                     <div>
                         <label className="block text-sm font-semibold text-gray-700 mb-1">Qtd. em Estoque</label>
-                        <input type="number" className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-adocci-gold" required />
+                        <input type="number" 
+                        value={estoqueAtual}
+                        onChange={(e) => setEstoqueAtual(e.target.value)}
+                        className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-adocci-gold" required />
                     </div>
 
                     {/* Estoque Mínimo */}
                     <div>
                         <label className="block text-sm font-semibold text-gray-700 mb-1">Alerta de Mínimo</label>
-                        <input type="number" className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-adocci-gold" required />
+                        <input type="number" 
+                        value={estoqueMinimo}
+                        onChange={(e) => setEstoqueMinimo(e.target.value)}
+                        className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-adocci-gold" required />
                     </div>
                 </div>
 
