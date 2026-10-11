@@ -25,10 +25,10 @@ const Navbar = ({ contadorAlertas = 0 }) => {
 
                     {/* Lado Central: Links de Navegação (Arquitetura da Informação) */}
                     <div className="hidden md:flex space-x-8">
-                        <a href="#" className="text-adocci-gold border-b-2 border-adocci-gold px-1 pt-1 text-sm font-medium">
+                        <a href="" className="text-adocci-gold border-b-2 border-adocci-gold px-1 pt-1 text-sm font-medium">
                             Dashboard
                         </a>
-                        <a href="#" className="text-gray-300 hover:text-adocci-gold px-1 pt-1 text-sm font-medium transition-colors">
+                        <a href="/Estoque" className="text-gray-300 hover:text-adocci-gold px-1 pt-1 text-sm font-medium transition-colors">
                             Estoque
                         </a>
                         <a href="#" className="text-gray-300 hover:text-adocci-gold px-1 pt-1 text-sm font-medium transition-colors">

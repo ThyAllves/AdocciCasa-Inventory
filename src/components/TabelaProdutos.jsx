@@ -15,6 +15,7 @@ const TabelaProdutos = ({ produtos, onMovimentarEstoque }) => {
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="bg-white">
+              <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest border-b border-gray-100">Imagem</th>
               <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest border-b border-gray-100">Produto</th>
               <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest border-b border-gray-100">Categoria</th>
               <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest border-b border-gray-100">Preço de Compra</th>
@@ -31,6 +32,7 @@ const TabelaProdutos = ({ produtos, onMovimentarEstoque }) => {
 
               return (
                 <tr key={produto.id} className="hover:bg-gray-50/50 transition-colors group">
+                  <td className="px-6 py-4 text-xs font-bold text-gray-400">{produto.imagem}</td>
                   <td className="px-6 py-4">
                     <p className="font-semibold text-adocci-dark group-hover:text-adocci-gold transition-colors">{produto.nome}</p>
                     <p className="text-[10px] text-gray-400 uppercase">ID: {produto.id.toString().slice(-4)}</p>

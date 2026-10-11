@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { supabase } from '../supabaseClient';
 
 const FormularioProduto = ({ aoSalvar }) => {
 
@@ -9,6 +10,9 @@ const FormularioProduto = ({ aoSalvar }) => {
     const [sku, setSku] = useState('');
     const [estoque_atual, setEstoque_atual] = useState('');
     const [estoque_minimo, setEstoque_minimo] = useState('');
+    const [imagem, setImagem] = useState(null);
+    const [preview, setPreview] = useState('');
+
 
     const CATEGORIAS = [
         'Mesa Posta',
@@ -23,29 +27,58 @@ const FormularioProduto = ({ aoSalvar }) => {
         'Outros'
     ]
 
-    const handSubmit = (e) => {
+
+    async function handSubmit(e) {
         e.preventDefault();
 
-        const novoProduto = {
-            id: Date.now(), // Gerar um ID único (pode ser melhorado futuramente)
-            nome,
-            categoria,
-            preco_compra: Number(preco_compra), // Converter para número
-            preco: Number(preco),
-            sku: sku,
-            estoque_atual: Number(estoque_atual),
-            estoque_minimo: Number(estoque_minimo)
-        };
-        aoSalvar(novoProduto);
+        try {
+            let imagemUrl = null;
 
-        setNome('');
-        setCategoria('');
-        setpreco_compra('');
-        setPreco('');
-        setSku('');
-        setEstoque_atual('');
-        setEstoque_minimo('');
+            if (imagem) {
+                const extensao = imagem.name.split('.').pop();
+                const caminho = `${crypto.randomUUID()}.${extensao}`;
+
+                const { error: erroUpload } = await supabase.storage
+                    .from('produtos')
+                    .upload(caminho, imagem, {
+                        contentType: imagem.type,
+                        upsert: false,
+                    });
+
+                if (erroUpload) throw erroUpload;
+                const { data } = supabase.storage
+                    .from('produtos')
+                    .getPublicUrl(caminho);
+
+                imagemUrl = data.publicUrl;
+            }
+
+            const { error: erroCadastro } = await supabase
+                .from('produtos')
+                .insert({
+                    nome,
+                    categoria,
+                    preco_compra: Number(preco_compra),
+                    preco: Number(preco),
+                    sku,
+                    estoque_atual: Number(estoque_atual),
+                    estoque_minimo: Number(estoque_minimo),
+                    imagem_url: imagemUrl,
+                });
+
+            if (erroCadastro) throw erroCadastro;
+
+            alert('Produto cadastrado com sucesso!');
+
+            setImagem(null);
+            setPreview('');
+
+        } catch (erro) {
+            console.error('Erro ao cadastrar produto:', erro);
+            alert(`Não foi possível cadastrar o produto: ${erro.message}`);
+        }
     }
+
 
     return (
         <div className="bg-white p-8 rounded-2xl shadow-xl border border-gray-100 max-w-2xl mx-auto mt-10">
@@ -145,11 +178,85 @@ const FormularioProduto = ({ aoSalvar }) => {
                     </div>
                 </div>
 
+                <div className="md:col-span-2">
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                        Imagem do Produto
+                    </label>
+
+                    <label
+                        htmlFor="imagem-produto"
+                        className="flex flex-col items-center justify-center w-full min-h-40
+                   border-2 border-dashed border-gray-300 rounded-lg
+                   cursor-pointer hover:border-adocci-gold transition-colors p-4"
+                    >
+                        {preview ? (
+                            <img
+                                src={preview}
+                                alt="Prévia do produto"
+                                className="max-h-56 max-w-full object-contain rounded-lg"
+                            />
+                        ) : (
+                            <>
+                                <span className="text-3xl mb-2">+</span>
+                                <span className="text-sm text-gray-600">
+                    Clique para selecionar uma imagem
+                </span>
+                                <span className="text-xs text-gray-400 mt-1">
+                    PNG, JPG ou WEBP
+                </span>
+                            </>
+                        )}
+
+                        <input
+                            id="imagem-produto"
+                            type="file"
+                            accept="image/png,image/jpeg,image/webp"
+                            className="hidden"
+                            onChange={(e) => {
+                                const arquivo = e.target.files?.[0];
+
+                                if (!arquivo) return;
+
+                                if (arquivo.size > 5 * 1024 * 1024) {
+                                    alert('A imagem deve ter no máximo 5 MB.');
+                                    e.target.value = '';
+                                    return;
+                                }
+
+                                setImagem(arquivo);
+                                setPreview(URL.createObjectURL(arquivo));
+                            }}
+                        />
+                    </label>
+
+                    {imagem && (
+                        <div className="flex items-center justify-between mt-2">
+            <span className="text-sm text-gray-500">
+                {imagem.name}
+            </span>
+
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setImagem(null);
+                                    setPreview('');
+                                }}
+                                className="text-sm text-red-600 hover:underline"
+                            >
+                                Remover imagem
+                            </button>
+                        </div>
+                    )}
+                </div>
+
+
+
                 {/* Botão de Ação */}
                 <button type='submit' className="w-full bg-adocci-dark text-adocci-gold font-bold py-4 rounded-lg hover:bg-gray-700 transition-colors shadow-lg uppercase tracking-widest text-sm mt-4">
                     Salvar no Inventário
                 </button>
             </form>
+
         </div>
     );
 }

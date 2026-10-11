@@ -1,37 +1,79 @@
 import Navbar from './components/Navbar';
 import FormularioProduto from './components/FormularioProduto';
 import dadosIniciais from './data/produtos.json';
-import TabelaProdutos from './components/TabelaProdutos'; // O JSON que você criou
+import TabelaProdutos from './components/TabelaProdutos';
 import { supabase } from './supabaseClient';
 import { useEffect, useState } from 'react';
 
 function App() {
-  // 1. Definindo a "Fonte Única da Verdade"
+
   const [produtos, setProdutos] = useState(dadosIniciais);
 
-  // 2. Função para Adicionar Produto (será passada para o formulário)
-  const adicionarProduto = async (novoProduto) => {
-    // 1. Enviamos para o Supabase
-    const { data, error } = await supabase
-      .from('produtos')
-      .insert([
-        {
-          nome: novoProduto.nome,
-          categoria: novoProduto.categoria,
-          preco_compra: novoProduto.preco_compra,
-          preco: novoProduto.preco,
-          sku: novoProduto.sku,
-          estoque_atual: novoProduto.estoque_atual,
-          estoque_minimo: novoProduto.estoque_minimo
-        }
-      ])
-      .select();
 
-    if (error) {
-      alert("Erro ao salvar no banco: " + error.message);
-    } else {
-      // 2. Se deu certo no banco, atualizamos a tela
-      setProdutos([...produtos, data[0]]);
+  const adicionarProduto = async (novoProduto) => {
+    let caminhoImagem = null;
+
+    try {
+      let imagemUrl = null;
+
+      if (novoProduto.imagem) {
+        const arquivo = novoProduto.imagem;
+        const extensao = arquivo.name.split('.').pop().toLowerCase();
+        caminhoImagem = `${crypto.randomUUID()}.${extensao}`;
+
+        const { error: erroUpload } = await supabase.storage
+            .from('produtos')
+            .upload(caminhoImagem, arquivo, {
+              contentType: arquivo.type,
+              upsert: false,
+            });
+
+        if (erroUpload) throw erroUpload;
+
+        const { data } = supabase.storage
+            .from('produtos')
+            .getPublicUrl(caminhoImagem);
+
+        imagemUrl = data.publicUrl;
+      }
+
+      const { data, error } = await supabase
+          .from('produtos')
+          .insert({
+            nome: novoProduto.nome,
+            categoria: novoProduto.categoria,
+            preco_compra: Number(novoProduto.preco_compra),
+            preco: Number(novoProduto.preco),
+            sku: novoProduto.sku,
+            estoque_atual: Number(novoProduto.estoque_atual),
+            estoque_minimo: Number(novoProduto.estoque_minimo),
+            imagem_url: imagemUrl,
+          })
+          .select()
+          .single();
+
+      if (error) throw error;
+
+      setProdutos((anteriores) => [...anteriores, data]);
+
+      alert('Produto cadastrado com sucesso!');
+      return true;
+
+    } catch (erro) {
+      console.error('Erro ao cadastrar produto:', erro);
+
+      if (caminhoImagem) {
+        const { error: erroRemocao } = await supabase.storage
+            .from('produtos')
+            .remove([caminhoImagem]);
+
+        if (erroRemocao) {
+          console.error('Erro ao remover imagem:', erroRemocao);
+        }
+      }
+
+      alert('Erro ao salvar produto: ' + erro.message);
+      return false;
     }
   };
 
@@ -46,7 +88,6 @@ function App() {
       return;
     }
 
-    // 1. Atualiza no Supabase
     const { error } = await supabase
       .from('produtos')
       .update({ estoque_atual: novoEstoque })
@@ -55,7 +96,6 @@ function App() {
     if (error) {
       alert("Erro ao atualizar estoque: " + error.message);
     } else {
-      // 2. Atualiza o estado local para a interface reagir instantaneamente
       setProdutos(produtos.map(p =>
         p.id === id ? { ...p, estoque_atual: novoEstoque } : p
       ));
@@ -68,7 +108,7 @@ function App() {
 
   async function buscarProdutos() {
     const { data, error } = await supabase
-      .from('produtos') // Nome da sua tabela no Supabase
+      .from('produtos')
       .select('*')
       .order('nome', { ascending: true });
 
@@ -82,8 +122,8 @@ function App() {
 
       <main className="max-w-7xl mx-auto py-10 px-4">
         <FormularioProduto aoSalvar={adicionarProduto} />
-        <TabelaProdutos produtos={produtos} onMovimentarEstoque={movimentarEstoque} />
-
+        
+        <TabelaProdutos produtos={produtos} onMovimentarEstoque={movimentarEstoque} className="" />
       </main>
     </div>
   );
